@@ -1,11 +1,20 @@
-FROM debian:bullseye-slim
+FROM golang:1.13-buster as build
 
-ARG YTT_VERSION
-ADD https://github.com/k14s/ytt/releases/download/${YTT_VERSION}/ytt-linux-amd64 /usr/bin/ytt
+ARG YTT_VERSION=master
+RUN echo building ytt $YTT_VERSION \
+ && git clone \
+        --branch "${YTT_VERSION}" \
+        --single-branch \
+        --depth 1 \
+        https://github.com/k14s/ytt \
+        ./src/github.com/k14s/ytt
+WORKDIR ./src/github.com/k14s/ytt
+RUN go fmt ./cmd/... ./pkg/... \
+ && go build -o ytt ./cmd/ytt/...
 
-RUN chmod +x /usr/bin/ytt && mkdir /workspace
+FROM debian:buster-slim
 
+COPY --from=build /go/src/github.com/k14s/ytt/ytt /usr/bin/ytt
 WORKDIR /workspace
-
 ENTRYPOINT ["/usr/bin/ytt"]
 
