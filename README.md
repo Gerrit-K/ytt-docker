@@ -1,6 +1,8 @@
 # ytt-docker
 A dockerfile for [k14s/ytt](https://github.com/k14s/ytt)
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/gerritk/ytt)](https://hub.docker.com/r/gerritk/ytt)
+
 ## Usage
 
 Simply run the container and mount your files to `/workspace`, e.g.:
