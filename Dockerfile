@@ -8,7 +8,7 @@ RUN echo building ytt $YTT_VERSION \
         --depth 1 \
         https://github.com/k14s/ytt \
         ./src/github.com/k14s/ytt
-WORKDIR ./src/github.com/k14s/ytt
+WORKDIR /go/src/github.com/k14s/ytt
 RUN go fmt ./cmd/... ./pkg/... \
  && CGO_ENABLED=0 go build -o ytt ./cmd/ytt/...
 
