@@ -10,9 +10,9 @@ RUN echo building ytt $YTT_VERSION \
         ./src/github.com/k14s/ytt
 WORKDIR ./src/github.com/k14s/ytt
 RUN go fmt ./cmd/... ./pkg/... \
- && go build -o ytt ./cmd/ytt/...
+ && CGO_ENABLED=0 go build -o ytt ./cmd/ytt/...
 
-FROM debian:buster-slim
+FROM busybox:1.31.1
 
 COPY --from=build /go/src/github.com/k14s/ytt/ytt /usr/bin/ytt
 WORKDIR /workspace
