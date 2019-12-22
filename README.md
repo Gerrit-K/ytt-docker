@@ -1,7 +1,12 @@
 # ytt-docker
 A dockerfile for [k14s/ytt](https://github.com/k14s/ytt)
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/gerritk/ytt)](https://hub.docker.com/r/gerritk/ytt)
+[
+    ![](https://images.microbadger.com/badges/commit/gerritk/ytt:latest.svg)
+    ![](https://images.microbadger.com/badges/image/gerritk/ytt:latest.svg)
+    ![](https://img.shields.io/docker/pulls/gerritk/ytt)
+](https://hub.docker.com/r/gerritk/ytt)
+
 
 ## Usage
 
