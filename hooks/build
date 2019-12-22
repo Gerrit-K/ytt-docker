@@ -1,3 +1,12 @@
 #!/usr/bin/env sh
 
-docker build --build-arg YTT_VERSION="${SOURCE_BRANCH}" -f "${DOCKERFILE_PATH}" -t "${IMAGE_NAME}" .
+docker build \
+    --label org.label-schema.build-date=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+    --label org.label-schema.vcs-ref=`git rev-parse --short HEAD` \
+    --label org.label-schema.vcs-url="https://github.com/Gerrit-K/ytt-docker" \
+    --label org.label-schema.version="${SOURCE_BRANCH}" \
+    --label org.label-schema.schema-version="1.0" \
+    --build-arg YTT_VERSION="${SOURCE_BRANCH}" \
+    -f "${DOCKERFILE_PATH}" \
+    -t "${IMAGE_NAME}" \
+    .
