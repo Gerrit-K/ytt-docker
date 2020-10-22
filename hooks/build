@@ -1,4 +1,11 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
+# If we're building a tag, map it to the upstream tags. Otherwise use develop.
+if grep '^v[0-9.]\+$' <<< "${SOURCE_BRANCH}" &>/dev/null; then
+    YTT_VERSION="${SOURCE_BRANCH}"
+else
+    YTT_VERSION="develop"
+fi
 
 docker build \
     --label org.label-schema.build-date=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
@@ -6,7 +13,7 @@ docker build \
     --label org.label-schema.vcs-url="https://github.com/Gerrit-K/ytt-docker" \
     --label org.label-schema.version="${SOURCE_BRANCH}" \
     --label org.label-schema.schema-version="1.0" \
-    --build-arg YTT_VERSION="${SOURCE_BRANCH}" \
+    --build-arg YTT_VERSION="${YTT_VERSION}" \
     -f "${DOCKERFILE_PATH}" \
     -t "${IMAGE_NAME}" \
     .

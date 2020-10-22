@@ -1,6 +1,6 @@
 FROM golang:1.13-buster as build
 
-ARG YTT_VERSION=master
+ARG YTT_VERSION=develop
 RUN echo building ytt $YTT_VERSION \
  && git clone \
         --branch "${YTT_VERSION}" \
