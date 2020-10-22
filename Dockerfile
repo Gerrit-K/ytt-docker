@@ -1,4 +1,4 @@
-FROM golang:1.13-buster as build
+FROM golang:1.15-buster AS build
 
 ARG YTT_VERSION=develop
 WORKDIR /go/src/github.com/k14s/ytt
@@ -18,7 +18,7 @@ RUN echo building ytt $YTT_VERSION \
 # 2. force a HTTPS redirect
 
 
-FROM busybox:1.31.1
+FROM busybox:1.32
 
 COPY --from=build /go/src/github.com/k14s/ytt/ytt /usr/bin/ytt
 WORKDIR /workspace
