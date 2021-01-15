@@ -1,5 +1,5 @@
 # ytt-docker
-A dockerfile for [k14s/ytt](https://github.com/k14s/ytt)
+A dockerfile for [vmware-tanzu/carvel-ytt](https://github.com/vmware-tanzu/carvel-ytt)
 
 [
     ![](https://images.microbadger.com/badges/commit/gerritk/ytt:latest.svg)
