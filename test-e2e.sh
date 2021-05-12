@@ -10,19 +10,24 @@ trap cleanup EXIT INT TERM
 
 IMAGE_NAME=${1:-"gerritk/ytt"}
 
-cd $(mktemp -d)
-
-git clone https://github.com/vmware-tanzu/carvel-ytt .
+git clone https://github.com/vmware-tanzu/carvel-ytt upstream
+cd upstream
 
 # create a "fake" ytt binary
 cat >./ytt <<EOF
 #!/usr/bin/env bash
+echo Debugging, PWD:=\$PWD
+ls -la \$PWD
+docker run --rm -v \$PWD:/foo busybox ls -la /foo
+
 docker run --rm \
     -u \$(id -u \$USER):\$(id -g \$USER) \
     \$(env | grep -E 'STR_VAL|YAML_VAL' | cut -f1 -d= | sed 's/^/-e /') \
-    -iv "\${PWD}":/workspace $IMAGE_NAME "\$@"
+    -iv "\${PWD}"/upstream:/workspace $IMAGE_NAME "\$@"
 EOF
 chmod +x ./ytt
+
+./ytt version
 
 # patch the e2e tests:
 #  - remove the ./hack/build.sh call
