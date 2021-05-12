@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+./test-e2e.sh "${IMAGE_NAME}"
