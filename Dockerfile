@@ -1,4 +1,4 @@
-FROM golang:1.16-buster AS build
+FROM golang:1.17-buster AS build
 
 ARG YTT_VERSION=develop
 WORKDIR /go/src/github.com/k14s/ytt
