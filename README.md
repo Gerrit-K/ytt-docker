@@ -2,8 +2,7 @@
 A dockerfile for [vmware-tanzu/carvel-ytt](https://github.com/vmware-tanzu/carvel-ytt)
 
 [
-    ![](https://images.microbadger.com/badges/commit/gerritk/ytt:latest.svg)
-    ![](https://images.microbadger.com/badges/image/gerritk/ytt:latest.svg)
+    ![](https://img.shields.io/docker/image-size/gerritk/ytt/latest)
     ![](https://img.shields.io/docker/pulls/gerritk/ytt)
 ](https://hub.docker.com/r/gerritk/ytt)
 
