@@ -5,7 +5,7 @@ WORKDIR /go/src/github.com/k14s/ytt
 RUN echo building ytt $YTT_VERSION \
  && git clone \
         --branch "${YTT_VERSION}" \
-        https://github.com/vmware-tanzu/carvel-ytt \
+        https://github.com/carvel-dev/ytt \
         . \
  && apt-get update && apt-get install -y --no-install-recommends zip=3.0* \
  && ./hack/build.sh

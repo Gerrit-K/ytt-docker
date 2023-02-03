@@ -1,5 +1,5 @@
 # ytt-docker
-A dockerfile for [vmware-tanzu/carvel-ytt](https://github.com/vmware-tanzu/carvel-ytt)
+A dockerfile for [carvel-dev/ytt](https://github.com/carvel-dev/ytt)
 
 [
     ![](https://img.shields.io/docker/image-size/gerritk/ytt/latest)
