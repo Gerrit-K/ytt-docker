@@ -8,7 +8,7 @@ RUN echo building ytt $YTT_VERSION \
         https://github.com/carvel-dev/ytt \
         . \
  && apt-get update && apt-get install -y --no-install-recommends zip=3.0* \
- && ./hack/build.sh
+ && ./hack/build.sh "${YTT_VERSION#v}"
 
 
 FROM busybox:1.34
