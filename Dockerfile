@@ -1,4 +1,4 @@
-FROM golang:1.23.2-bookworm AS build
+FROM golang:1.23.3-bookworm AS build
 
 ARG YTT_VERSION=develop
 WORKDIR /go/src/github.com/k14s/ytt
