@@ -1,4 +1,4 @@
-FROM golang:1.25.7-trixie AS build
+FROM golang:1.26.3-trixie AS build
 
 ARG YTT_VERSION=develop
 WORKDIR /go/src/github.com/k14s/ytt
