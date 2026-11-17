@@ -55,3 +55,16 @@ Here are a couple of examples:
 ## Feedback
 
 If you have suggestions on the structure of the Dockerfile or are looking for a specific version that is not available yet, feel free to create an issue.
+
+
+## Releases
+
+Images are built from upstream [carvel-dev/ytt](https://github.com/carvel-dev/ytt) releases.
+A daily workflow publishes new upstream releases to Docker Hub, using the Go version from upstream's `go.mod`.
+To rebuild a release, run the `docker-build-and-push` workflow manually with the version (e.g. `v0.56.0`).
+
+To build locally:
+
+```shell
+docker build --build-arg YTT_VERSION=v0.56.0 --build-arg GO_VERSION=1.27.4 -t ytt .
+```
