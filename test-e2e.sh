@@ -1,58 +1,30 @@
 #!/usr/bin/env bash
+# Runs upstream ytt's Go e2e tests against a docker image.
+# Usage: test-e2e.sh [IMAGE] [YTT_VERSION]
+set -eEuo pipefail
 
-set -eEo pipefail
+IMAGE=${1:-gerritk/ytt}
+YTT_VERSION=${2:-develop}
 
-OLD_PWD=$PWD
-function cleanup() {
-    cd $OLD_PWD
-}
-trap cleanup EXIT INT TERM
+WORKDIR=$(cd "$(mktemp -d)" && pwd -P)
+trap 'rm -rf "$WORKDIR"' EXIT
 
-IMAGE_NAME=${1:gerritk/ytt}
+git clone --quiet -c advice.detachedHead=false --depth 1 --branch "$YTT_VERSION" https://github.com/carvel-dev/ytt "$WORKDIR"
+cd "$WORKDIR"
 
-cd $(mktemp -d)
-
-git clone https://github.com/vmware-tanzu/carvel-ytt .
-
-# create a "fake" ytt binary
-cat >./ytt <<EOF
+# Upstream tests run ../../ytt from test/e2e and pass absolute temp paths.
+# The wrapper mounts the clone at its host path so both resolve inside docker.
+DOCKER=$(command -v docker)
+mkdir tmp
+cat >./ytt <<WRAPPER
 #!/usr/bin/env bash
-docker run --rm \
-    -u \$(id -u \$USER):\$(id -g \$USER) \
-    \$(env | grep -E 'STR_VAL|YAML_VAL' | cut -f1 -d= | sed 's/^/-e /') \
-    -iv "\${PWD}":/workspace $IMAGE_NAME "\$@"
-EOF
+exec "$DOCKER" run --rm -i \\
+    -u "\$(id -u):\$(id -g)" \\
+    \$(env | grep -E '^(STR|YAML)_VAL' | cut -f1 -d= | sed 's/^/-e /') \\
+    -v "$WORKDIR":"$WORKDIR" -w "\$PWD" \\
+    "$IMAGE" "\$@"
+WRAPPER
 chmod +x ./ytt
 
-# patch the e2e tests:
-#  - remove the ./hack/build.sh call
-#  - remove the pipe tests (they won't work with docker)
-git apply --whitespace=fix <<'EOF'
-diff --git a/hack/test-e2e.sh b/hack/test-e2e.sh
-index 6a6fa4c..dd42f32 100755
---- a/hack/test-e2e.sh
-+++ b/hack/test-e2e.sh
-@@ -2,8 +2,6 @@
- 
- set -e -x
- 
--./hack/build.sh
--
- mkdir -p ./tmp
- 
- # check stdin reading
-@@ -51,9 +49,6 @@ diff <(./ytt -f examples/overlay-not-matcher)           examples/overlay-not-mat
- # test pipe stdin
- diff <(cat examples/k8s-relative-rolling-update/config.yml | ./ytt -f-) examples/k8s-relative-rolling-update/expected.txt
- 
--# test pipe redirect (on Linux, pipe is symlinked)
--diff <(./ytt -f pipe.yml=<(cat examples/k8s-relative-rolling-update/config.yml)) examples/k8s-relative-rolling-update/expected.txt
--
- # test data values
- diff <(./examples/data-values/run.sh) examples/data-values/expected.txt
- 
-EOF
-
-# run the e2e tests
-hack/test-e2e.sh
-
+# Process substitution (/dev/fd/N) cannot cross into docker.
+TMPDIR=$WORKDIR/tmp go test ./test/e2e/... -skip 'TestPipes/test_pipe_redirect'
