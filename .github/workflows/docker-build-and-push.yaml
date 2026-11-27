@@ -59,6 +59,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
+          cache: false
       - name: E2E tests
         run: ./test-e2e.sh gerritk/ytt:test "${{ matrix.version }}"
       - name: Set up QEMU
