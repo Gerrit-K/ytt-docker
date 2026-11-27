@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "description": "CI (build + upstream e2e tests) gates every update",
+      "matchManagers": ["dockerfile", "github-actions"],
+      "automerge": true
+    }
+  ]
+}

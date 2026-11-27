@@ -1,6 +1,7 @@
-FROM golang:1.27.4-trixie AS build
+ARG GO_VERSION=1.27
+FROM golang:${GO_VERSION}-trixie AS build
 
-ARG YTT_VERSION=develop
+ARG YTT_VERSION
 WORKDIR /go/src/github.com/k14s/ytt
 RUN echo building ytt $YTT_VERSION \
  && git clone \

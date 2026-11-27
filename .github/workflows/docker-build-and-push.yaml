@@ -4,69 +4,83 @@ run-name: Build images and push to Docker Hub
 on:
   push:
     branches:
-      - "*"
-    tags:
-      - "v*.*.*"
-
-env:
-  YTT_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'develop' }}
+      - "**"
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Upstream ytt release to (re)build and publish, e.g. v0.56.0"
+        required: true
 
 jobs:
-  docker:
+  plan:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: gerritk/ytt
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - uses: actions/checkout@v4
+      - id: plan
+        env:
+          MODE: >-
+            ${{ github.event_name == 'schedule' && 'new'
+            || github.event_name == 'workflow_dispatch' && format('version:{0}', inputs.version)
+            || github.ref_name == github.event.repository.default_branch && 'push-latest'
+            || 'latest' }}
+        run: echo "matrix=$(.github/scripts/plan.sh)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
       - name: Build test image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64
           load: true
           tags: gerritk/ytt:test
-          build-args: YTT_VERSION=${{ env.YTT_VERSION }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          build-args: |
+            YTT_VERSION=${{ matrix.version }}
+            GO_VERSION=${{ matrix.go }}
+          cache-from: type=gha,scope=${{ matrix.version }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.version }}
       - name: Smoke test
         run: |
           docker run --rm gerritk/ytt:test --version
           docker run --rm gerritk/ytt:test -h
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: stable
+          cache: false
       - name: E2E tests
-        run: ./test-e2e.sh gerritk/ytt:test "$YTT_VERSION"
+        run: ./test-e2e.sh gerritk/ytt:test "${{ matrix.version }}"
       - name: Set up QEMU
-        if: github.ref_type == 'tag'
-        uses: docker/setup-qemu-action@v2
+        if: matrix.push
+        uses: docker/setup-qemu-action@v3
       - name: Login to Docker Hub
-        if: github.ref_type == 'tag'
-        uses: docker/login-action@v2
+        if: matrix.push
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
-        if: github.ref_type == 'tag'
-        uses: docker/build-push-action@v4
+        if: matrix.push
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          build-args: YTT_VERSION=${{ env.YTT_VERSION }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ${{ matrix.tags }}
+          build-args: |
+            YTT_VERSION=${{ matrix.version }}
+            GO_VERSION=${{ matrix.go }}
+          cache-from: type=gha,scope=${{ matrix.version }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.version }}
