@@ -56,7 +56,7 @@ jobs:
         run: |
           docker run --rm gerritk/ytt:test --version
           docker run --rm gerritk/ytt:test -h
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
           cache: false
